@@ -5,6 +5,14 @@
 require([
     "esri/map", 
     "esri/graphic",
+
+    "esri/symbols/SimpleMarkerSymbol",
+    "esri/symbols/TextSymbol",
+    "esri/symbols/Font",
+
+    "dojo/_base/Color",
+    "dojo/_base/array",
+
     "esri/geometry/Extent",
     "esri/arcgis/utils",  
     "esri/dijit/Legend",
@@ -16,8 +24,10 @@ require([
     "dojo/dom", 
     "dojo/on",
     
+    
 ], 
-     function(Map, Graphic, Extent, arcgisUtils, Legend, Search, Locator, parser, ready, dom, on){
+     function(Map, Graphic, SimpleMarkerSymbol, TextSymbol, Font,
+        Color, array, Extent, arcgisUtils, Legend, Search, Locator, parser, ready, dom, on){
 
     parser.parse();
 
@@ -27,7 +37,7 @@ require([
 
     arcgisUtils.createMap('95a0746db08c4659a4b9aee3fc30b985', "mapa").then(function(response){
 
-       let mapa = response.map;
+       var mapa = response.map;
 
        var legendLayers = arcgisUtils.getLegendLayers(response);
 
@@ -36,7 +46,7 @@ require([
         layerInfo: legendLayers,
         }, "leyenda");
        legend.startup();
-    });
+    
 
     var buscador = new Search({
         map: mapa,
@@ -46,16 +56,11 @@ require([
     //Constructor del task
 
     var localizador = new Locator (
-        "http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Locators/ESRI_Geocode_USA/GeocodeServer"
+        "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
     );
 
-    //Preparar los parámetros 
-
-    var params = {
-        address: "Gran Via",
-        outFields: ["*"],
-    };
-
+    //Preparar los parámetros
+    
 
     //Evento click. Ponemos el dom.ById porque estams con dojo
 
@@ -64,22 +69,81 @@ require([
     //Ejecutar la función
 
     function doAddressToLocations(){
+        var objAddress = {
+            "SingleLine" : dom.byId("taAddress").value
+        };
+    
+        var params = {
+            address: objAddress,
+            outFields: ["*"],
+        };
         localizador.addressToLocations(params) //Evento del locator//
     };
-
 
     //Evento de la API
 
     localizador.on("address-to-locations-complete", showResults);
 
-    function showResults(){
-        
+    function showResults(candidates) {
+        // Define the symbology used to display the results
+        var symbolMarker = new SimpleMarkerSymbol();
+        symbolMarker.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
+        symbolMarker.setColor(new Color([255, 0, 0, 0.75]));
+        var font = new Font("14pt", Font.STYLE_NORMAL, Font.VARIANT_NORMAL, "Helvetica");
+
+        // loop through the array of AddressCandidate objects
+        var geometryLocation;
+        array.every(candidates.addresses, function (candidate) {
+
+            // if the candidate was a good match
+            if (candidate.score > 80) {
+
+                // retrieve attribute info from the candidate
+                var attributesCandidate = {
+                    address: candidate.address,
+                    score: candidate.score,
+                    locatorName: candidate.attributes.Loc_name
+                };
+
+                /*
+                 * Step: Retrieve the result's geometry
+                 */
+
+                geometryLocation = candidate.location;
+
+
+                /*
+                 * Step: Display the geocoded location on the map
+                 */
+
+                var graphicResult = new Graphic(geometryLocation, symbolMarker, attributesCandidate);
+                mapa.graphics.add(graphicResult);
+
+
+                // display the candidate's address as text
+                var sAddress = candidate.address;
+                var textSymbol = new TextSymbol(sAddress, font, new Color("#FF0000"));
+                textSymbol.setOffset(0, -22);
+                mapa.graphics.add(new Graphic(geometryLocation, textSymbol));
+
+                // exit the loop after displaying the first good match
+                return false;
+            }
+        });
+
+        // Center and zoom the map on the result
+        if (geometryLocation !== undefined) {
+            mapa.centerAndZoom(geometryLocation, 15);
+        }
     }
 
-
-
-
-
-
+   });
 
 });
+
+
+
+
+
+
+
