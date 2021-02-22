@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://js.arcgis.com/3.35/esri/css/esri.css">
+        <script src="https://js.arcgis.com/3.35/"></script>
+        <style>
+            html body #mapa{
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                position: absolute;
+                z-index: -1;
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+        <button id="localizar" style="align-items: flex-end; z-index: 1;">Locate</button>
+        <div id="buscar"></div>
+        <div id="mapa"></div>
+        <div id="leyenda" style="z-index: 1;">Leyenda</div>
+        
+       
+        
+
+        <script src="geocodificar.js"></script>
+    </body>
+</html>
