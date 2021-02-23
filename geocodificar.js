@@ -5,6 +5,8 @@
 require([
     "esri/map", 
     "esri/graphic",
+    "esri/dijit/Directions",
+    "esri/dijit/Print",
 
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/TextSymbol",
@@ -26,7 +28,7 @@ require([
     
     
 ], 
-     function(Map, Graphic, SimpleMarkerSymbol, TextSymbol, Font,
+     function(Map, Graphic, Directions, Print, SimpleMarkerSymbol, TextSymbol, Font,
         Color, array, Extent, arcgisUtils, Legend, Search, Locator, parser, ready, dom, on){
 
     parser.parse();
@@ -59,7 +61,6 @@ require([
         "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
     );
 
-    //Preparar los parámetros
     
 
     //Evento click. Ponemos el dom.ById porque estams con dojo
@@ -136,6 +137,19 @@ require([
             mapa.centerAndZoom(geometryLocation, 15);
         }
     }
+
+        var direcciones = new Directions({
+        map: mapa,
+        routeTaskUrl: "https://utility.arcgis.com/usrsvcs/appservices/OM1GNiiACNJceMRn/rest/services/World/Route/NAServer/Route_World",
+
+        }, "direcciones")
+        direcciones.startup();
+
+        var imprimir = new Print ({
+            map: mapa,
+            url: "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task/execute",
+        }, dom.byId("imprimir"));
+        imprimir.startup();
 
    });
 
