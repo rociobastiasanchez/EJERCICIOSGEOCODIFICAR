@@ -7,7 +7,10 @@ require([
     "esri/graphic",
     "esri/dijit/Directions",
     "esri/dijit/Print",
+    "esri/layers/GraphicsLayer",
 
+    "esri/toolbars/draw",
+    "esri/symbols/SimpleLineSymbol",
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/TextSymbol",
     "esri/symbols/Font",
@@ -28,7 +31,7 @@ require([
     
     
 ], 
-     function(Map, Graphic, Directions, Print, SimpleMarkerSymbol, TextSymbol, Font,
+     function(Map, Graphic, Directions, Print, GraphicsLayer, Draw, SimpleLineSymbol, SimpleMarkerSymbol, TextSymbol, Font,
         Color, array, Extent, arcgisUtils, Legend, Search, Locator, parser, ready, dom, on){
 
     parser.parse();
@@ -137,6 +140,7 @@ require([
             mapa.centerAndZoom(geometryLocation, 15);
         }
     }
+        //Añadimos widget de Direcciones
 
         var direcciones = new Directions({
         map: mapa,
@@ -145,11 +149,41 @@ require([
         }, "direcciones")
         direcciones.startup();
 
+        //Añadimos boton imprimir
+
         var imprimir = new Print ({
             map: mapa,
             url: "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task/execute",
         }, dom.byId("imprimir"));
         imprimir.startup();
+
+        //Podemos dibujar sobre el mapa
+
+        //Primero añadimos la GraphicsLayer
+
+        // var migraphicslayer = New GraphicsLayer({opacity:0.20});
+
+        //Cuando se carge el ampa, añadimos el toolsbar
+
+        mapa.on('load', inciodibujo);
+
+        function inciodibujo(){
+            const toolbar = new Draw (mapa);
+            toolbar.active(Draw.POLYLINE);
+            toolbar.on("draw-complete", addToMap);
+        };
+
+        function addToMap (params){
+            console.log('terminé de pintar', params);
+
+        };
+
+        // var dibujo = new Graphic ()
+        //     var simbolo = new SimpleLineSymbol();
+        //     simbolo.setStyle(SimpleLineSymbol.STYLE_SOLID);
+        //     simbolo.setColor(new Color("blue"));
+
+        
 
    });
 
